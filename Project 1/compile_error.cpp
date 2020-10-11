@@ -8,11 +8,11 @@ int main()
 {
      int numberSurveyed;
      int forJoe;
-     int forDonald;
+     int forDonald
 	
      cout << "How many registered voters were surveyed? ";
      cin >> numbersurveyed;
-     cout << 'How many of them say they will vote for Joe? ';
+     cout << "How many of them say they will vote for Joe? ";
      cin >> forJoe;
      cout << "How many of them say they will vote for Donald? ";
      cin >> forDonald;

@@ -21,19 +21,19 @@ int main() {
      getline(cin, importerName);
 
      // Check undefined cases
-     if (cheeseName == "") {
+     if (cheeseName == "") { // empty string cheese
           cout << "---" << endl;
-          cout << "You must enter a cheese type";
-     } else if (importValue <= 0) { // make sure if we want equal case
+          cout << "You must enter a cheese type" << endl;
+     } else if (importValue <= 0) { // non-positive import value
           cout << "---" << endl;
-          cout << "The value must be positive";
-     } else if (importerName == "") {
+          cout << "The value must be positive" << endl;
+     } else if (importerName == "") { // empty string importer
           cout << "---" << endl;
-          cout << "You must enter an importer";
+          cout << "You must enter an importer" << endl;
      } else {
 
           // find second step import tax amount 
-          if (cheeseName == "cheshire" || cheeseName == "stilton"){
+          if (cheeseName == "cheshire" || cheeseName == "stilton"){ // special import duty only applies to these two cheeses
                cheeseSpecificTax = 0.014;
           } else {
                cheeseSpecificTax = 0.02;
@@ -46,7 +46,7 @@ int main() {
                if (importValue - 12000 >= 0) {
                     importDuty += 12000 * cheeseSpecificTax;
                     importValue -= 12000; // remove next 12000 from import amount
-                    if (importValue > 0) { // total import value is >= 13000
+                    if (importValue > 0) { // total import value is > 13000
                          importDuty += importValue * 0.029;
                     }
                } else {
@@ -61,6 +61,6 @@ int main() {
 
           // create final output text
           cout << "---" << endl;
-          cout << "The import duty for " << importerName << " is $" << importDuty; 
+          cout << "The import duty for " << importerName << " is $" << importDuty << endl; 
      }
 }

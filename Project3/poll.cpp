@@ -87,26 +87,33 @@ bool isSyntacticallyCorrectStateForcast(string stateData) { // "55TXD" or "9OHR"
      return true;
 }
 
+
+// we know a valid state forcast must be of either length 4 or 5, so we can use this to create the only possible valid stateforcasts in pollData string and test to see if they're valid state forcasts.  If so, we increment by either 3 or 4, and if not then we return false and stop checking the string 
 bool isSyntacticallyCorrect(string pollData) {
      int i = 0;
      while(i < pollData.size()) {
+          
+          cout << "index " << i << endl; 
           string substringStateForcast = "";
-          for (int k = i; k <= 3; k++) {
-               substringStateForcast += pollData.at(k);
-          }
+          substringStateForcast += pollData.at(i);
+          substringStateForcast += pollData.at(i + 1);
+          substringStateForcast += pollData.at(i + 2);
+          substringStateForcast += pollData.at(i + 3);
+          
           cout << "forcast 1 " << substringStateForcast << endl;
           if (isSyntacticallyCorrectStateForcast(substringStateForcast)) {
                i += 4;
                cout << "stop 1" << endl;
-               substringStateForcast = "";
                continue;
-          } else if (substringStateForcast.size() == pollData.size()) {
+          } else if (substringStateForcast.size() == pollData.size() - i) {
                return false;
           } else {
                string substringStateForcast2 = "";
-               for (int l = i; l <= 4; l++) {
-               substringStateForcast2 += pollData.at(l);
-               }
+               substringStateForcast2 += pollData.at(i);
+               substringStateForcast2 += pollData.at(i + 1);
+               substringStateForcast2 += pollData.at(i + 2);
+               substringStateForcast2 += pollData.at(i + 3);
+               substringStateForcast2 += pollData.at(i + 4);
                cout << "forcast 2 " << substringStateForcast2 << endl;
                if (isSyntacticallyCorrectStateForcast(substringStateForcast2)) {
                     i += 5;
@@ -122,35 +129,7 @@ bool isSyntacticallyCorrect(string pollData) {
      return true;
 }
 
-// bool isSyntacticallyCorrect(string pollData) {
-//      for (int i = 0; i < pollData.size(); i++) {
-//           cout << i << endl;
-//           string stateForcast1;
-//           for (int j = i; j <=3; j++) { 
-//                stateForcast1 += pollData.at(j);
-//           }
-//           if (isSyntacticallyCorrectStateForcast(addDigitToFront(stateForcast1))) {
-//                i += 3;
-//                continue;
-//           } else {
-//                string stateForcast2;
-//                for (int j = i; j <=4; j++) { 
-//                     i += 4;
-//                     stateForcast2 += pollData.at(j);
-//                }
-//                if (isSyntacticallyCorrectStateForcast(stateForcast2)) {
-//                     continue;
-//                }
-//                else {
-//                     return false;
-//                }
-//                return false;
-//           }
-//      }
-//      return true;
-// }
 
-// we know a valid state forcast must be of either length 4 or 5, so we can use this to create the only possible valid stateforcasts in pollData string and test to see if they're valid state forcasts.  If so, we increment by either 3 or 4, and if not then we return false
 // bool isSyntacticallyCorrect(string pollData) {
 //      int i = 0;
 //      while (i < pollData.size())  {

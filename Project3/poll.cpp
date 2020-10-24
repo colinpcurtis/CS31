@@ -129,43 +129,6 @@ bool isSyntacticallyCorrect(string pollData) {
      return true;
 }
 
-
-// bool isSyntacticallyCorrect(string pollData) {
-//      int i = 0;
-//      while (i < pollData.size())  {
-//           string stateForcast1 = "";
-//           cout << "index: " << i << endl;
-//           for (int j = i; j <=3; j++) { 
-//                stateForcast1 += pollData.at(j);
-//           }
-//           cout << "state1 " << stateForcast1 << endl;
-
-//           // stateForcast1 = addDigitToFront(stateForcast1);
-//           // check equality condition of what to do if the state forcasts are equal.  Might have consequences for empty string case.  
-//           if (isSyntacticallyCorrectStateForcast(stateForcast1)) {
-//                i += 4;
-//                continue;
-//           } else  {
-//                string stateForcast2 = "";
-//                for (int j = i; j <=4; j++) {
-//                     stateForcast2 += pollData.at(j);
-//                }
-//                cout << "2: " << stateForcast2 << endl;
-//                cout << "second index" << i << endl;
-//                if (isSyntacticallyCorrectStateForcast(addDigitToFront(stateForcast2))) {
-//                     i += 5;
-//                     cout << "ran here" << endl;
-//                     continue;
-//                } else {
-//                     return false;
-//                }
-//           }
-//           cout << "final index: " << i << endl;
-//      }
-//      return true; // get to end of list, so they were all correct forcasts.  
-// }
-
-
 int main() {
      string forecast;
      cout << "enter a forecast: ";

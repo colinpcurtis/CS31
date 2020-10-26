@@ -14,17 +14,6 @@ bool isValidUppercaseStateCode(string stateCode)
             codes.find(stateCode) != string::npos);  // match found
 }
 
-// string constantLength(string forcastString) {
-//      for (int i = 0; i < forcastString.size(); i++){
-//           if (isdigit(forcastString.at(i) && isdigit(forcastString.at(i + 1))) {
-//                continue;
-//           } else if(isdigit(forcastString.at(i) &&)){
-               
-//           }
-//      }
-
-// }
-
 
 string toUppercase(string pollData) {
      string uppercase = "";
@@ -48,37 +37,36 @@ string addDigitToFront(string pollData) {
      }
 }
 
-
-bool isSyntacticallyCorrectStateForcast(string stateData) { // "55TXD" or "9OHR"
+// check if a single state forcast is correct, which allows for easier implementation in isSyntacticallyCorrect  
+bool isSyntacticallyCorrectStateForcast(string stateData) {
      string stateCode = "";
-     if (stateData == "") {
+     if (stateData == "") { // empty returns true
           return true;
      }
-     stateData = toUppercase(stateData);
+
+     stateData = toUppercase(stateData);  // make entire string upper case, reduces repetition
      if (!isdigit(stateData.at(0))) { // make sure we have a digit at the start
-          // cout << "stop 1" << endl;
-          return false;
-     }
-     stateData = addDigitToFront(stateData);
-     if (stateData.size() != 5) {
-          // cout << "stop 2" << endl;
-          return false;
-     }
-     stateCode = stateCode + stateData.at(2);
-     stateCode = stateCode + stateData.at(3);
-     if (!isValidUppercaseStateCode(stateCode)) {
-          // cout << "stop 3" << endl;
           return false;
      }
 
-     for (int i = 0; i != stateData.size(); i++) {
+     stateData = addDigitToFront(stateData); // add a digit onto the front, so we have length 5 string to check, reduce repetition
+     if (stateData.size() != 5) {
+          return false;
+     }
+     stateCode = stateCode + stateData.at(2); // get single state code
+     stateCode = stateCode + stateData.at(3);
+
+     if (!isValidUppercaseStateCode(stateCode)) { // invalid state code, automatically return false
+          return false;
+     }
+     
+     for (int i = 0; i != stateData.size(); i++) { // check if there's no punctuation, spaces, or incorrectly placed digits
           char currentLoc = stateData.at(i);
           if ((i >= 2 && isdigit(currentLoc)) || (i >= 2 && !isalpha(currentLoc)) || isspace(currentLoc) || ispunct(currentLoc)) {
-               // cout << "stop 4" << endl;
                return false;
           }
      }
-     return true;
+     return true; // only return true if everything else passed  
 }
 
 
@@ -86,33 +74,29 @@ bool isSyntacticallyCorrectStateForcast(string stateData) { // "55TXD" or "9OHR"
 bool isSyntacticallyCorrect(string pollData) {
      int i = 0;
      while(i < pollData.size()) {
-          
-          // cout << "index " << i << endl; 
+          // generates state forcast.  Check the shorter possibility first so we don't run into any out of range errors
           string substringStateForcast = "";
           substringStateForcast += pollData.at(i);
           substringStateForcast += pollData.at(i + 1);
-          substringStateForcast += pollData.at(i + 2);
+          substringStateForcast += pollData.at(i + 2); 
           substringStateForcast += pollData.at(i + 3);
           
-          // cout << "forcast 1 " << substringStateForcast << endl;
           if (isSyntacticallyCorrectStateForcast(substringStateForcast)) {
                i += 4;
-               // cout << "stop 1" << endl;
                continue;
           } else if (substringStateForcast.size() == pollData.size() - i) {
-               return false;
+               return false; // if we're at the last state forcast and it's not correct, return false
           } else {
-               string substringStateForcast2 = "";
+               string substringStateForcast2 = "";  // check longer state forcast
                substringStateForcast2 += pollData.at(i);
                substringStateForcast2 += pollData.at(i + 1);
                substringStateForcast2 += pollData.at(i + 2);
                substringStateForcast2 += pollData.at(i + 3);
                substringStateForcast2 += pollData.at(i + 4);
-               // cout << "forcast 2 " << substringStateForcast2 << endl;
-               if (isSyntacticallyCorrectStateForcast(substringStateForcast2)) {
+
+               if (isSyntacticallyCorrectStateForcast(substringStateForcast2)) { // go to next state forcast if this is correct
                     i += 5;
-                    // cout << "stop 2" << endl;
-                    substringStateForcast2 = "";
+                    // substringStateForcast2 = "";
                     continue;
                }
                else {
@@ -120,8 +104,10 @@ bool isSyntacticallyCorrect(string pollData) {
                }
           }
      }
-     return true;
+     return true; // only return true at end if everything else passed
 }
+
+
 // TODO: check 00 case
 bool checkZeroElectoralVotes(string pollData) { // return true if a state forcast predicts zero electoral votes
      for (int i = 0; i < pollData.size(); i++) {
@@ -144,35 +130,39 @@ int tallyVotes(string pollData, char party, int& voteTally) {
      } else if (checkZeroElectoralVotes(pollData)) {
           return 3;
      } else {
-          int count = 0;
+
+          pollData = toUppercase(pollData);
+          cout << endl;
+          int count = 0; // num of electoral votes for party
           int index = 0; // looping variable
-          while (index < pollData.size()) {
-               string electoralVotes = pollData.substr(index, 2);
-               cout << "electoral votes " << electoralVotes << endl;
-               if (isdigit(pollData.at(index) && isdigit(pollData.at(index + 1)))) {
-                    string electoralVotes = pollData.substr(index, 2);
-                    cout << "electoral votes " << electoralVotes << endl;
+
+          // go through the entire poll string and check if the state forcast matches the party. If so, add electoral votes to count
+          while (index < pollData.size()) { 
+
+               if ( isdigit(pollData.at(index)) && isdigit(pollData.at(index + 1)) && (pollData.at(index + 4) == toupper(party)) ) {
+                    string electoralVotes = "";
+                    electoralVotes += pollData.at(index);
+                    electoralVotes += pollData.at(index + 1); // string containing number of electoral votes
+                    int votes = stoi(electoralVotes); // add onto number of 
+                    count += votes;
+                    index += 5; // jump to start of next state forcast
+                    continue;
+               } else if ( isdigit(pollData.at(index)) && (pollData.at(index + 3) == toupper(party)) ) {
+                    string electoralVotes = "";
+                    electoralVotes += pollData.at(index);
+                    int votes = stoi(electoralVotes);
+                    count += votes;
+                    index += 4; // jump to start of next state forcast
+                    continue;
+               } else {
+                    index++; // just go to next index if there's no digits and party match
                }
-               // } else if (isdigit(pollData.at(index) && !isdigit(pollData.at(index + 1)))) {
-               //      electoralVotes += pollData.at(index);
-               // }
-               // cout << "votes " << electoralVotes << endl;
-
-               // string stateForcast = "";
-
-               // stateForcast += pollData.at(index);
-               // stateForcast += pollData.at(index + 1);
-               // if (isValidUppercaseStateCode(stateForcast) && (pollData.at(index + 2) == party || pollData.at(index + 2) == toupper(party))) {
-               //      if (isdigit(pollData.at(index - 1)))
-               // }
-               break;
           }
+          cout << "count: " << count << endl;
           return 4;
      }
-
-
-     
 }
+
 
 int main() {
      string forecast;

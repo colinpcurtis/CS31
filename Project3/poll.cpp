@@ -70,7 +70,7 @@ bool isSyntacticallyCorrectStateForcast(string stateData) {
 }
 
 
-// we know a valid state forcast must be of either length 4 or 5, so we can use this to create the only possible valid stateforcasts in pollData string and test to see if they're valid state forcasts.  If so, we increment by either 3 or 4, and if not then we return false and stop checking the string 
+// we know a valid state forcast must be of either length 4 or 5, so we can use this to create the only possible valid stateforcasts in pollData string and test to see if they're valid state forcasts.  If so, we increment by either 4 or 5, and if not then we return false and stop checking
 bool isSyntacticallyCorrect(string pollData) {
      int i = 0;
      while(i < pollData.size()) {
@@ -96,7 +96,6 @@ bool isSyntacticallyCorrect(string pollData) {
 
                if (isSyntacticallyCorrectStateForcast(substringStateForcast2)) { // go to next state forcast if this is correct
                     i += 5;
-                    // substringStateForcast2 = "";
                     continue;
                }
                else {
@@ -132,7 +131,6 @@ int tallyVotes(string pollData, char party, int& voteTally) {
      } else {
 
           pollData = toUppercase(pollData);
-          cout << endl;
           int count = 0; // num of electoral votes for party
           int index = 0; // looping variable
 
@@ -158,8 +156,9 @@ int tallyVotes(string pollData, char party, int& voteTally) {
                     index++; // just go to next index if there's no digits and party match
                }
           }
-          cout << "count: " << count << endl;
-          return 4;
+          voteTally = count;
+          cout << "vote tally: " << voteTally << endl;
+          return 0;
      }
 }
 

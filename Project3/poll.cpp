@@ -50,7 +50,7 @@ bool isSyntacticallyCorrectStateForcast(string stateData) {
      }
 
      stateData = addDigitToFront(stateData); // add a digit onto the front, so we have length 5 string to check, reduce repetition
-     if (stateData.size() != 5) {
+     if (stateData.size() <= 4) {
           return false;
      }
      stateCode = stateCode + stateData.at(2); // get single state code
@@ -70,10 +70,27 @@ bool isSyntacticallyCorrectStateForcast(string stateData) {
 }
 
 
-// we know a valid state forcast must be of either length 4 or 5, so we can use this to create the only possible valid stateforcasts in pollData string and test to see if they're valid state forcasts.  If so, we increment by either 4 or 5, and if not then we return false and stop checking
+// we know a valid state forcast must be of either length 4 or 5, so we can use this to create the only possible valid stateforcasts in 
+// pollData string and test to see if they're valid state forcasts.  If so, we increment by either 4 or 5, 
+// and if not then we return false and stop checking
 bool isSyntacticallyCorrect(string pollData) {
+
+     // quick way to make sure we have no unwanted punctuation in the string
+     for (int j = 0; j!= pollData.size(); j++) { 
+          if ( !isalnum(pollData.at(j)) ) {
+               return false;
+          }
+     }
+
+     // loop through substring state forcasts and check if they're valid
      int i = 0;
      while(i < pollData.size()) {
+
+          // makes sure we don't get any out of range errors with missing letters at the end of the string
+          if (pollData.size() - i <= 3 && pollData.size() - i >=1) {
+               return false; 
+          }
+
           // generates state forcast.  Check the shorter possibility first so we don't run into any out of range errors
           string substringStateForcast = "";
           substringStateForcast += pollData.at(i);
@@ -82,7 +99,7 @@ bool isSyntacticallyCorrect(string pollData) {
           substringStateForcast += pollData.at(i + 3);
           
           if (isSyntacticallyCorrectStateForcast(substringStateForcast)) {
-               i += 4;
+               i += 4; // jump to start of next state forecast
                continue;
           } else if (substringStateForcast.size() == pollData.size() - i) {
                return false; // if we're at the last state forcast and it's not correct, return false
@@ -107,8 +124,8 @@ bool isSyntacticallyCorrect(string pollData) {
 }
 
 
-// TODO: check 00 case
-bool checkZeroElectoralVotes(string pollData) { // return true if a state forcast predicts zero electoral votes
+// return true if a state forcast predicts zero electoral votes 
+bool checkZeroElectoralVotes(string pollData) { 
      for (int i = 0; i < pollData.size(); i++) {
           if (pollData.at(i) == '0' && !isdigit(pollData.at(i + 1))) {
                return true;
@@ -156,7 +173,7 @@ int tallyVotes(string pollData, char party, int& voteTally) {
                     index++; // just go to next index if there's no digits and party match
                }
           }
-          voteTally = count;
+          voteTally = count; // set voteTally to electoral count that we calculate
           cout << "vote tally: " << voteTally << endl;
           return 0;
      }

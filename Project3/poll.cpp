@@ -174,7 +174,6 @@ int tallyVotes(string pollData, char party, int& voteTally) {
                }
           }
           voteTally = count; // set voteTally to electoral count that we calculate
-          cout << "vote tally: " << voteTally << endl;
           return 0;
      }
 }

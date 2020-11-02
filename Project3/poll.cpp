@@ -193,4 +193,5 @@ int main() {
      cin >> voteTally;
 
      cout << "forcast is: " << tallyVotes(forecast, party, voteTally) << endl;
+     cout << voteTally << endl;
 }

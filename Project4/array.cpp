@@ -151,15 +151,39 @@ int lookupAny(const string a1[], int n1, const string a2[], int n2) {
      }
      return -1;
 } 
+
+
+int divide(string a[], int n, string divider) {
+     if (n <= -1) {
+          return -1;
+     }
+     // easiest approach is to alphabetically sort the array since it puts the array in a usable and reproducable order each time the function is called
+     for (int i = 0; i < n - 1; i++) {
+          for (int j = 0; j < n - 1; j++ ) {
+               if ( a[j + 1].compare(a[j]) < 0) {
+                    string temp = a[j + 1];
+                    a[j + 1] = a[j];
+                    a[j] = temp;
+               } 
+          }
+     }
+     // traverse array and return first index whose element is less than the divider
+     for (int i = 0; i < n - 1; i++) {
+          if (divider.compare(a[i]) <= 0) {
+               return i;
+          }
+     }
+     return n;
+}
  
 int main() {
-     string names[10] = { "kamala", "mark", "sara", "martha", "donald", "lindsey" };
-     string set1[10] = { "jamie", "donald", "martha", "mark" };
-
-     cout << lookupAny(names, 6, set1, 4) << endl;
-     cout << lookupAny(names, 6, set1, 2) << endl;
-     // for (int i = 0; i < 7; i++) {
-     //      cout << d[i] << endl;;
-     // }
+     string candidate[6] = { "jamie", "lindsey", "mark", "susan", "joe", "donald" };
+     // string candidate2[4] = { "mark", "sara", "lindsey", "mike" };
+     int x = divide(candidate, 6, "kamala");
+     
+     for (int i = 0; i < 6; i++) {
+          cout << candidate[i] << endl;;
+     }
+     cout << "return: " << x << endl;
      
 }

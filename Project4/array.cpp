@@ -52,7 +52,7 @@ int positionOfMax(const string a[], int n) {
 
 
 int rotateLeft(string a[], int n, int pos) {
-     if (n <= -1) {
+     if (n <= -1 || pos <= -1) { // access out of range element
           return -1;
      }
 
@@ -121,8 +121,8 @@ int subsequence(const string a1[], int n1, const string a2[], int n2) {
      if (n1 <= -1 || n2 <= -1) {
           return -1;
      }
-
-     for (int i = 0; i < n1 - n2; i++) { // loop to n1 - n2 since the last possible match is at that position, ensures no out of range errors
+     // double check less than or equal
+     for (int i = 0; i <= n1 - n2; i++) { // loop to n1 - n2 since the last possible match is at that position, ensures no out of range errors
           int numEqual = 0;
           for (int j = 0; j < n2; j++) {
                if (a1[i + j] == a2[j]) { // check corresponding positions in both arrays

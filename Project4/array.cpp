@@ -41,7 +41,7 @@ int positionOfMax(const string a[], int n) {
      maxElement = a[0]; // compare with this element during loop
      runningMax = -1; // initialize to something we can't get while looping
      for (int i = 0; i < n; i++) {
-          if (a[i].compare(maxElement) > 0) { // compares elements alphabetically
+          if ( a[i] > maxElement ) { // compares elements alphabetically
                maxElement = a[i]; // reset maxElement and position where it occurs
                runningMax = i;   
           }
@@ -160,7 +160,7 @@ int divide(string a[], int n, string divider) {
      // easiest approach is to alphabetically sort the array since it puts the array in a usable and reproducable order each time the function is called
      for (int i = 0; i < n - 1; i++) {
           for (int j = 0; j < n - 1; j++ ) {
-               if ( a[j + 1].compare(a[j]) < 0) {
+               if ( a[j + 1] < a[j] ) {
                     string temp = a[j + 1];
                     a[j + 1] = a[j];
                     a[j] = temp;
@@ -169,7 +169,7 @@ int divide(string a[], int n, string divider) {
      }
      // traverse array and return first index whose element is less than the divider
      for (int i = 0; i < n - 1; i++) {
-          if (divider.compare(a[i]) <= 0) {
+          if (divider <= a[i] ) {
                return i;
           }
      }

@@ -5,8 +5,6 @@
 
 using namespace std;
 
-// match one word rule if w_in is in document
-// match two word rule if w_in is in document and w_out is not in document
 const int MAX_WORD_LENGTH = 20;
 const int MAX_DOCUMENT_LENGTH = 250;
 
@@ -48,6 +46,7 @@ bool hasPunct(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 
 
 
 void flipPos(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], int srcIndex, int destIndex) {
+     // flip corresponding positions in word rules to a new index
      char temp1[MAX_WORD_LENGTH + 1];
      strcpy(temp1, word1[destIndex]);
      strcpy(word1[destIndex], word1[srcIndex]);
@@ -100,11 +99,10 @@ void checkEmptyString(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_L
 }
 
 
-bool checkIfPresent(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], 
-     char checkWord[MAX_WORD_LENGTH + 1], int nRules, int pos) {
+bool checkIfPresent(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], char checkWord[MAX_WORD_LENGTH + 1], int nRules, int pos) {
 
      for (int i = pos - 1; i >= 0 ; i--) {
-          if ( strcmp(word2[i], "") == 0 && strcmp(word1[i], checkWord) == 0) {
+          if ( strcmp(word2[i], "") == 0 && strcmp(word1[i], checkWord) == 0) { // check if the one word rule occurs multiple times
                return true;
           }
      }
@@ -138,72 +136,46 @@ int cleanupRules(char wordin[][MAX_WORD_LENGTH + 1], char wordout[][MAX_WORD_LEN
      return 0;
 }
 
+bool nextCharSpace(const char document[], int pos) {
+     // make sure that when we identify a word, it is followed by a space
+     if (pos > strlen(document)) {
+          return false;
+     }
+     else if (pos == strlen(document) || isspace(document[pos]) ) { // check strlen first because of out of bounds
+          // if it ends the eocument then we want to return true
+          return true;
+     }
+     return false;
+}
 
-bool wordInDoc(const char document[], const char word1[]) {
+
+bool wordInDoc(const char document[], const char word1[]) { // check if word is in document
+
+     int loopBound; 
+     // in some cases the length of the words can be longer than the document
+     // so need to ensure that we get no out of bounds errors
+
+     if ( strlen(document) >= strlen(word1) ) {
+          loopBound = strlen(document) - strlen(word1) + 1;
+     } else {
+          loopBound = strlen(word1);
+     }
 
      // check if sequence of positions matches word1
-     for (int i = 0; i < strlen(document) - strlen(word1) + 1; i++) {
+     for (int i = 0; i < loopBound; i++) {
           int numMatches = 0;
           for (int j = 0; j < strlen(word1); j++) {
                if ( document[i + j] == word1[j] ) { // corresponding position in document
                     numMatches++;
                }
           }
-          if (numMatches == strlen(word1)) { // sequence word1 occurs in document
+          if (numMatches == strlen(word1)  && nextCharSpace(document, i + strlen(word1)) ) { 
+               // sequence word1 occurs in document and is followed by space
                return true;
           }
      }
      return false;
 }
-
-
-// bool substring(const char document[], const char word1[], const char word2[]) {
-//      int matches = 0;
-
-//      for (int i = 0; i < MAX_DOCUMENT_LENGTH - strlen(word1) + 1; i++) {
-//           int numMatches1 = 0;
-//           int numMatches2 = 0;
-//           for (int j = 0; j < strlen(word1); j++) {
-//                if ( document[i + j] == word1[j] ) {
-//                     numMatches1++;
-//                     // cerr << document[i + j] << " " << word1[j] << endl;
-//                }
-//           }
-
-
-//           // for (int j = 0; j <= i - strlen(word2) - 1; j++) {
-//           //      if ( document[i + j] == word2[j] ) {
-//           //           numMatches2++;
-//           //      }
-//           // }
-//           if (numMatches1 == strlen(word1)) {
-//                return true;
-//           }
-//      }
-
-//      for (int i = 0; i < MAX_DOCUMENT_LENGTH - strlen(word2) + 1; i++) {
-//           int numMatches1 = 0;
-//           int numMatches2 = 0;
-//           for (int j = 0; j < strlen(word2); j++) {
-//                if ( document[i + j] == word2[j] ) {
-//                     numMatches1++;
-//                     cerr << document[i + j] << " " << word2[j] << endl;
-//                }
-//           }
-
-
-//           // for (int j = 0; j <= i - strlen(word2) - 1; j++) {
-//           //      if ( document[i + j] == word2[j] ) {
-//           //           numMatches2++;
-//           //      }
-//           // }
-//           if (numMatches1 == strlen(word2)) {
-//                matches++;
-//           }
-//      }
-
-//      return false;
-// }
 
 
 int determineScore(const char document[], const char wordin[][MAX_WORD_LENGTH+1], const char wordout[][MAX_WORD_LENGTH+1], int nRules) {
@@ -215,11 +187,9 @@ int determineScore(const char document[], const char wordin[][MAX_WORD_LENGTH+1]
      int badStringPositions = 0; // keeps track non-alpha or non-space chars 
      int lenOfString = 0; // keeps track of times we shift over to reset zero byte at end
      for (int i = 0; i < strlen(document); i++) {
-         
-          // cout << newDoc[i] << endl;
+
           if ( isalpha(document[i]) || isspace(document[i]) ) {
-               cleanStr[i - badStringPositions] = tolower(document[i]);
-               // cerr << i << " " << removedStr[i] << endl;
+               cleanStr[i - badStringPositions] = tolower(document[i]); // position is shifted to account for punctuation characters
                lenOfString++; // increment length of string 
           } else {
                badStringPositions++;
@@ -227,17 +197,18 @@ int determineScore(const char document[], const char wordin[][MAX_WORD_LENGTH+1]
      }
      cleanStr[lenOfString] = '\0'; // reset zero byte
      // cerr << endl;
-     // cerr << cleanStr << endl;
+     // // cerr << cleanStr << strlen(cleanStr) << endl;
      // cerr << endl;
 
 
      // determine score
      int score = 0;
      for (int i = 0; i < nRules; i++) {
-          if (strcmp(wordout[i], "") == 0){ // one word rule 
+          // cerr << wordin[i] << " " << wordout[i] <<  " " << cleanStr[i] << endl;
+          if (strcmp(wordout[i], "") == 0 && wordInDoc(cleanStr, wordin[i]) ){ // one word rule 
                score++;
           }
-          else if ( wordInDoc(document, wordin[i]) && !wordInDoc(document, wordout[i])) { // two word rule
+          else if ( wordInDoc(cleanStr, wordin[i]) && !wordInDoc(cleanStr, wordout[i])) { // two word rule
                score++;
           }
      }
@@ -246,30 +217,46 @@ int determineScore(const char document[], const char wordin[][MAX_WORD_LENGTH+1]
 
 
 int main() {
-     const int TEST1_NRULES = 12;
-     char test1win[TEST1_NRULES][MAX_WORD_LENGTH+1] = {
-          "confusion", "family", "charm", "hearty", "house", "worn-out", "family", "charm", "ties", "", "charm", "FaMily" };
+     // const int TEST1_NRULES = 12;
+     // char test1win[TEST1_NRULES][MAX_WORD_LENGTH+1] = {
+     //      "confusion", "family", "charm", "hearty", "house", "worn-out", "family", "charm", "ties", "", "charm", "FaMily" };
 
-     char test2win[TEST1_NRULES][MAX_WORD_LENGTH + 1] = {
-          "", "ties", "confusion", "hearty", "intrigue", "younger", "first", "", "family", "frightened", "", "ties" };
+     // char test2win[TEST1_NRULES][MAX_WORD_LENGTH + 1] = {
+     //      "", "ties", "confusion", "hearty", "intrigue", "younger", "first", "", "family", "frightened", "", "ties" };
 
-     // lower("Happy families are all alike; every unhappy family is unhappy in its own way.");
-     // lower("I'm upset that on Nov. 13th, 2020, my 2 brand-new BMW M850is were stolen!!");
-     // bool x = substring("im upset that on nov th my bmw was stolen", "was", "was");
+     assert(wordInDoc("im upset that on nov th my bmw was stolen", "was") == 1);
+     assert(wordInDoc("im upset that on nov th my bmw was stolen", "try") == 0);
+     assert(wordInDoc("im upset that on nov th my bmw was stolen", "the") == 0);
+     assert(wordInDoc("im upset that on nov th my bmw was stolen", "stolen") == 1);
 
-     // bool x = wordInDoc("im upset that on nov th my bmw was stolen", "was");
-     // assert(wordInDoc("im upset that on nov th my bmw was stolen", "was") == 1);
-     // assert(wordInDoc("im upset that on nov th my bmw was stolen", "try") == 0);
-     // assert(wordInDoc("im upset that on nov th my bmw was stolen", "the") == 0);
-     // assert(wordInDoc("im upset that on nov th my bmw was stolen", "stolen") == 1);
+     
+     const int TEST1_NRULES = 3;
+     const char document[MAX_DOCUMENT_LENGTH + 1] = "im upset that on family th my ties was stolen and have i";
+     char wordin[TEST1_NRULES][MAX_WORD_LENGTH+1] = {"i",};
+     char wordout[TEST1_NRULES][MAX_WORD_LENGTH+1] = {"",};
+
+          char test1win[TEST1_NRULES][MAX_WORD_LENGTH+1] = { "family", "unhappy", "horse", };
+          char test1wout[TEST1_NRULES][MAX_WORD_LENGTH+1] = {"",       "horse",   "", };
+          assert(determineScore("Happy families are all alike; every unhappy family is unhappy in its own way.",
+                        test1win, test1wout, TEST1_NRULES) == 2);
+          assert(determineScore("Happy horses are all alike; every unhappy horse is unhappy in its own way.",
+                        test1win, test1wout, TEST1_NRULES-1) == 0);
+          assert(determineScore("Happy horses are all alike; every unhappy horse is unhappy in its own way.",
+                        test1win, test1wout, TEST1_NRULES) == 1);
+          assert(determineScore("A horse!  A horse!  My kingdom for a horse!",
+                        test1win, test1wout, TEST1_NRULES) == 1);
+          assert(determineScore("horse:stable ratio is 10:1",
+                        test1win, test1wout, 0) == 0);
+          assert(determineScore("**** 2020 ****",
+                        test1win, test1wout, -1) == 0);
+
+          assert(determineScore(document, wordin, wordout, 1) == 1);
+          cout << "All tests succeeded" << endl;
 
 
-     const char document[MAX_DOCUMENT_LENGTH + 1] = "im upset that on family th my ties was stolen and i have confusion";
-     int x = determineScore(document, test1win, test2win, 1);
-     cerr << "result: " << x << endl;
+     
+     
+     // int x = determineScore(document, wordin, wordout, 1);
+     // cout << x << endl;
 
-
-     // cerr << x << endl;
-     // int x = cleanupRules(test1win, test2win, 0);
-     // cout << "returned: " << x << endl;
 }

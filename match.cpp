@@ -19,90 +19,27 @@ void lower(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1],
 }
 
 
-void remove(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], int nRules, int indexToRemove) {
-
-     char toLast1[MAX_WORD_LENGTH];
-     strcpy(toLast1, word1[indexToRemove]);
-     char toLast2[MAX_WORD_LENGTH];
-     strcpy(toLast2, word2[indexToRemove]);
-
-     for (int i = indexToRemove + 1; i < nRules; i++) { // have to do everything paired to ensure word order is preserved
-          strcpy(word1[i-1], word1[i]);
-          strcpy(word2[i-1], word2[i]);
-     }
-     strcpy(word1[nRules - 1], toLast1);
-     strcpy(word2[nRules - 1], toLast2);
-}
-
-
-bool hasPunct(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], int index) {
-     for (int i = 0; i < MAX_WORD_LENGTH; i++) {
-          if ( ispunct(word1[index][i]) || ispunct(word2[index][i]) ) {
-               return false;
+bool hasPunct(char word1[][MAX_WORD_LENGTH + 1], int index) {
+     // loop through string positions and check if they have punctuation
+     for (int i = 0; i < strlen(word1[index]); i++) {
+          if ( ispunct(word1[index][i]) ) {
+               return true;
           }
      }
-     return true;
+     return false;
 }
 
-
-void flipPos(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], int srcIndex, int destIndex) {
-     // flip corresponding positions in word rules to a new index
-     char temp1[MAX_WORD_LENGTH + 1];
-     strcpy(temp1, word1[destIndex]);
-     strcpy(word1[destIndex], word1[srcIndex]);
-     strcpy(word1[srcIndex], temp1);
-
-     char temp2[MAX_WORD_LENGTH + 1];
-     strcpy(temp2, word2[destIndex]);
-     strcpy(word2[destIndex], word2[srcIndex]);
-     strcpy(word2[srcIndex], temp2);
-}
-
-
-void removePunct(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], int nRules) {
-     for (int i = 0; i < nRules; i++ ) {
-          for (int j = 0; j < nRules; j++) {
-               if ( hasPunct(word1, word2, i) && !hasPunct(word1, word2, j) ) { 
-                    // flip positions in string until all non-punct elements are at front
-                    flipPos(word1, word2, i, j);
-               }
-          }
+bool invalidOneWordRule( char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], char checkWord[MAX_WORD_LENGTH + 1], int nRules, 
+                         int pos) {
+     if (strcmp(checkWord, "") == 0 ) { // empty one word rule is invalid
+          return true;
      }
-}
-
-
-void removeDuplicates(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], int nRules) {
      for (int i = 0; i < nRules; i++) {
-          if ( strcmp(word1[i], word2[i]) == 0) {
-               remove(word1, word2, nRules, i);
-          }
-     }
-
-     for (int i = 0; i < nRules; i++) { // remove any w_in one word rules that have duplicates
-          for (int j = 0; j < nRules; j++) {
-               if ( strcmp(word1[i], word2[j]) == 0 && strcmp(word2[i], "") == 0) {
-                    remove(word1, word2, nRules, j); // remove j so that we maintain the current position
-               }
-          }
-     }
-}
-
-
-void checkEmptyString(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], 
-                      int  nRules) {
-     // need word2 as a parameter since we'll need to flip word pairs if there's an empty string and preserve the order
-     for (int i = 0; i < nRules; i++) {
-          if ( strcmp(word1[i], "") == 0 ) { 
-               remove(word1, word2, nRules, i); // compare with empty string and place it at the end
-          }
-     }
-}
-
-
-bool checkIfPresent(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], char checkWord[MAX_WORD_LENGTH + 1], int nRules, int pos) {
-
-     for (int i = pos - 1; i >= 0 ; i--) {
-          if ( strcmp(word2[i], "") == 0 && strcmp(word1[i], checkWord) == 0) { // check if the one word rule occurs multiple times
+          // cerr << i << " " <<word1[i] << " " << checkWord << " " << word2[i] << endl;
+          
+          if ( /*strcmp(word2[i], "") == 0 &&*/ i != pos && (strcmp(word1[i], checkWord) == 0 || strcmp(word2[i], "") != 0
+          /*|| strcmp(checkWord, "") == 0*/  )) {
+               // cerr << word1[i] << " " << checkWord << endl;
                return true;
           }
      }
@@ -110,34 +47,170 @@ bool checkIfPresent(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LEN
 }
 
 
+bool invalidTwoWordRule( char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], char checkWord1[MAX_WORD_LENGTH + 1], 
+                       char checkWord2[MAX_WORD_LENGTH + 1], int nRules, int pos) {
+
+     if (strcmp(checkWord1, "") == 0 || (strcmp(checkWord1, checkWord2) == 0) ) {
+          return true;
+     }
+     int numOccurences = 0;
+     for (int i = 0; i < nRules ; i++) {
+          // if ( /*strcmp(word2[i], "") != 0 && */ i != pos && strcmp(word1[i], checkWord1) == 0 && strcmp(word2[i], checkWord2) == 0  /*|| 
+          //      (strcmp(word1[i], checkWord1) == 0 && strcmp(checkWord2, "") == 0)*/ ) {
+
+          //      cerr << word1[i] << " " << checkWord1 << " "<< word2[i] << " " << checkWord2 << endl;
+          //      return true;
+          // }
+          // cerr << i << " " <<word1[i] << " " << checkWord1 << " "<< word2[i] << " " << checkWord2 << endl;
+          if ( i != pos && ( strcmp(word1[i], checkWord1) == 0 && strcmp(word2[i], checkWord2) == 0 )
+               || (strcmp(word1[i], checkWord1) == 0 &&  strcmp(word2[i], "") == 0) /*|| (strcmp(word1[i], "") == 0) */) {
+               // not checking same element, both in and out words are equal, wordin matches one word rule
+               
+               return true;
+          }
+     }
+     return false;
+}
+
+
+bool checkIfWordPresent(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], int nRules, int pos) {
+     // see if word in has duplicates prior to current position
+     for (int i = 0; i < nRules ; i++) { // start at pos - 1 so we don't identify current position
+          // if ( (strcmp(word2[i], "") == 0 && strcmp(word1[i], checkWord) == 0) ||  
+          //      (strcmp(word2[i], "") != 0 && strcmp(word1[i], checkWord) == 0 ) ) { 
+          //           // check if the word rule occurs multiple times || strcmp(word2[i], checkWord) == 0 ))
+          //      return true;
+          // }
+
+          // if ( !invalidOneWordRule(word1, word2, word1[i], i) || !invalidTwoWordRule(word1, word2, word1[i], word2[i], i) ) {
+          //      return true;
+          // }
+          if ( strcmp(word2[i], "") == 0 ) {
+               if ( invalidOneWordRule(word1, word2, word1[i], nRules, i) ) {
+                    return true;
+               }
+          } else {
+               if ( invalidTwoWordRule(word1, word2, word1[i], word2[i], nRules, i) ) {
+                    return true;
+               }
+          }
+     }
+     return false;
+}
+
+
+// void checkValidPositions(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], int nRules) {
+//      // dont need char checkWord[MAX_WORD_LENGTH + 1] parameter
+//      for (int i = 0; i < nRules; i++) {
+//           if ( checkIfPresent(word1, word2, word1[i], nRules) ) {
+//                     remove(word1, word2, nRules, i); 
+//           }
+//           // for (int j = 0; j < nRules; j++) {
+               
+//           // }
+//      }
+// }
+
+
+// void replaceString(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], int nRules) {
+//      char newStringin[nRules][MAX_WORD_LENGTH + 1];
+//      char newStringout[nRules][MAX_WORD_LENGTH + 1];
+     
+//      int counter = 0;
+//      int badPositions = 0;
+//      for (int i = 0; i < nRules; i++) { // loop through word rules, if they acceptable word rules, add them to front, else add to back
+          
+//           if ( strcmp(word1[i], "") != 0 && strcmp(word1[i], word2[i]) != 0  && !checkIfWordPresent(word1, word2, word1[i], i) 
+//                && !hasPunct(word1, i) && !hasPunct(word2, i) ) {
+
+//                counter++;
+//                strcpy(newStringin[i- badPositions], word1[i]);
+//                strcpy(newStringout[i - badPositions], word2[i]);
+               
+//           }
+//           else {
+//                badPositions++;
+//           }
+//      }
+//      cerr << endl;
+//      cerr << "result" << endl;
+//      for (int i = 0; i < nRules; i++) {
+//           cerr << newStringin[i] << " " << newStringout[i] << endl;
+//      }
+//      cerr << counter << endl;
+// }
+
+
 int cleanupRules(char wordin[][MAX_WORD_LENGTH + 1], char wordout[][MAX_WORD_LENGTH + 1], int nRules) {
      
      // cleans the array according to the rules
      lower(wordin, wordout, nRules);
-     removePunct(wordin, wordout, nRules);
-     removeDuplicates(wordin, wordout, nRules);
-     checkEmptyString(wordin, wordout, nRules);
+     // removePunct(wordin, wordout, nRules);
+     char newStringin[nRules][MAX_WORD_LENGTH + 1];
+     char newStringout[nRules][MAX_WORD_LENGTH + 1];
+     
+     int validWordRules = 0; // number of valid word rules
+     int badPositions = 0; // keep track of invalid positions in string
+     // for (int i = 0; i < nRules; i++) { 
+     //      // cerr << wordin[i] << " " << wordout[i] << endl;
+     //      // loop through word rules, if they acceptable word rules, add them to front and increment counter
+          
+     //      if ( strcmp(wordin[i], "") != 0 && strcmp(wordin[i], wordout[i]) != 0   && !checkIfWordPresent(wordin, wordout, i) &&
+     //      /*&& !invalidOneWordRule(wordin, wordout, wordin[i], i) &&   
+     //           !invalidTwoWordRule(wordin, wordout, wordin[i], wordout[i], i) && */ !hasPunct(wordin, i) && !hasPunct(wordout, i) ) {
+               
+     //           strcpy(newStringin[i- badPositions], wordin[i]);
+     //           strcpy(newStringout[i - badPositions], wordout[i]);
+     //           validWordRules++;
+     //      }
+     //      else {
+     //           badPositions++;
+     //      }
+     // }
 
      for (int i = 0; i < nRules; i++) {
-          cerr << wordin[i] << " " << wordout[i] << endl;
-     }
-     
-     for (int i = 0; i < nRules; i++) {
-          
-           // check all failing conditions
-          if ( strcmp(wordin[i], "") == 0 || strcmp(wordin[i], wordout[i]) == 0  || checkIfPresent(wordin, wordout, wordin[i], nRules, i) || 
-          !hasPunct(wordin, wordout, i) ) {
-               // cerr << endl;
-               // cerr << wordin[i] << " " << wordout[i] << endl;
-               // cerr << "ran here" << endl;
-               return i; // return num of matches, but with zero-indexing we return the correct number.  
+          if ( !invalidTwoWordRule(wordin, wordout, wordin[i], wordout[i], nRules, i) 
+               && !hasPunct(wordin, i) && !hasPunct(wordout, i) ) {
+
+               strcpy(newStringin[i- badPositions], wordin[i]);
+               strcpy(newStringout[i - badPositions], wordout[i]);
+               validWordRules++;
+          } else if ( !invalidOneWordRule(wordin, wordout, wordin[i], nRules, i) && !hasPunct(wordin, i) && !hasPunct(wordout, i) ) {
+               cerr << wordin[i] << " " << wordout[i] << endl;
+
+               strcpy(newStringin[i- badPositions], wordin[i]);
+               strcpy(newStringout[i - badPositions], wordout[i]);
+               validWordRules++;
+          } else {
+               badPositions++;
           }
      }
-     return 0;
+
+     // for (int i = 0; i < nRules; i++) {
+     //      cerr << i << " " <<wordin[i] << " " << wordout[i] << endl;
+     //      if ( /*checkIfWordPresent(wordin, wordout, nRules, i)*/ 
+     //           (invalidOneWordRule(wordin, wordout, wordin[i], nRules, i) && invalidTwoWordRule(wordin, wordout, wordin[i], wordout[i], nRules, i) )  && !hasPunct(wordin, i) && !hasPunct(wordout, i)) {
+
+     //           strcpy(newStringin[i- badPositions], wordin[i]);
+     //           strcpy(newStringout[i - badPositions], wordout[i]);
+     //           validWordRules++;
+     //      } else {
+     //           badPositions++;
+     //      }
+     // }
+     cerr << endl;
+     cerr << "result " << validWordRules << endl;
+     cerr << "bad positions " << badPositions << endl;
+     for (int i = 0; i < validWordRules; i++) {
+          cerr << newStringin[i] << " " << newStringout[i] << endl;
+     }
+
+     return validWordRules;
 }
 
+
 bool nextCharSpace(const char document[], int pos) {
-     // make sure that when we identify a word, it is followed by a space
+     // make sure that when we identify a word, it is followed by a space or ends the document
      if (pos > strlen(document)) {
           return false;
      }
@@ -156,7 +229,7 @@ bool wordInDoc(const char document[], const char word1[]) { // check if word is 
      // so need to ensure that we get no out of bounds errors
 
      if ( strlen(document) >= strlen(word1) ) {
-          loopBound = strlen(document) - strlen(word1) + 1;
+          loopBound = strlen(document) - strlen(word1) + 1; // ensures no out of range errors
      } else {
           loopBound = strlen(word1);
      }
@@ -169,7 +242,7 @@ bool wordInDoc(const char document[], const char word1[]) { // check if word is 
                     numMatches++;
                }
           }
-          if (numMatches == strlen(word1)  && nextCharSpace(document, i + strlen(word1)) ) { 
+          if (numMatches == strlen(word1)  && nextCharSpace(document, i + strlen(word1)) ) {
                // sequence word1 occurs in document and is followed by space
                return true;
           }
@@ -182,6 +255,7 @@ int determineScore(const char document[], const char wordin[][MAX_WORD_LENGTH+1]
      
      char cleanStr[MAX_DOCUMENT_LENGTH + 1];
      strcpy(cleanStr, document);
+
 
      // set chars to lowercase and only keep alphabetic or space characters
      int badStringPositions = 0; // keeps track non-alpha or non-space chars 
@@ -196,9 +270,6 @@ int determineScore(const char document[], const char wordin[][MAX_WORD_LENGTH+1]
           }
      }
      cleanStr[lenOfString] = '\0'; // reset zero byte
-     // cerr << endl;
-     // // cerr << cleanStr << strlen(cleanStr) << endl;
-     // cerr << endl;
 
 
      // determine score
@@ -217,46 +288,72 @@ int determineScore(const char document[], const char wordin[][MAX_WORD_LENGTH+1]
 
 
 int main() {
-     // const int TEST1_NRULES = 12;
-     // char test1win[TEST1_NRULES][MAX_WORD_LENGTH+1] = {
-     //      "confusion", "family", "charm", "hearty", "house", "worn-out", "family", "charm", "ties", "", "charm", "FaMily" };
+     const int TEST1_NRULES = 12;
+     char test1win[TEST1_NRULES][MAX_WORD_LENGTH+1] = {
+          "confusion", "family", "charm", "hearty", "house", "worn-out", "family", "charm", "ties", "", "charm", "FaMily" };
 
-     // char test2win[TEST1_NRULES][MAX_WORD_LENGTH + 1] = {
-     //      "", "ties", "confusion", "hearty", "intrigue", "younger", "first", "", "family", "frightened", "", "ties" };
+     char test2win[TEST1_NRULES][MAX_WORD_LENGTH + 1] = {
+          "", "ties", "confusion", "hearty", "intrigue", "younger", "first", "", "family", "frightened", "", "ties" };
 
-     assert(wordInDoc("im upset that on nov th my bmw was stolen", "was") == 1);
-     assert(wordInDoc("im upset that on nov th my bmw was stolen", "try") == 0);
-     assert(wordInDoc("im upset that on nov th my bmw was stolen", "the") == 0);
-     assert(wordInDoc("im upset that on nov th my bmw was stolen", "stolen") == 1);
+     char word1in[TEST1_NRULES][MAX_WORD_LENGTH+1] = {
+          "confusion", "confusion", "", "charm", "house", "worn-out", "family", "charm", "ties", "", "charm", "FaMily" };
+
+     char word2in[TEST1_NRULES][MAX_WORD_LENGTH + 1] = {
+          "hi", "hi", "confusion", "hearty", "intrigue", "younger", "first", "", "family", "frightened", "", "ties" };
+     
+     // int x = cleanupRules(word1in , word2in, 5);
+     // cerr << x << endl;
+
+     // replaceString(word1in, word2in, 5);
+     // int x = cleanupRules(word1in, word2in, 5);
+     // cerr << x << endl;
+
+     // assert( checkIfWordPresent( word1in, word2in, ))
+
+     assert( cleanupRules(test1win, test2win, 12) == 6 );
+
+     // assert( invalidOneWordRule(test1win, test2win, "confusion", 12, 0) == 0 );
+     // assert( invalidOneWordRule(test1win, test2win, "hi", 12, 6) == 0 );
+     // assert( invalidOneWordRule(test1win, test2win, "charm", 12, 10) == 1  );
+
+     // assert( invalidTwoWordRule(test1win, test2win, "hearty", "hearty", 12, 3) == 1 );
+     // assert( invalidTwoWordRule(test1win, test2win, "family", "ties", 12, 11) == 1 );
+     // assert ( invalidTwoWordRule(test1win, test2win, "charm", "", 12, 10) == 1);
+     // assert( invalidTwoWordRule(test1win, test2win, "family", "first", 12, 6) == 0 );
+
+     cerr << "all passed" << endl;
+     
+
+     // char checkword[MAX_WORD_LENGTH + 1] = "confusion";
+     // bool x = checkIfPresent(word1in, word2in, checkword, 0);
+     // cerr << x << endl;
+     // assert(wordInDoc("im upset that on nov th my bmw was stolen", "was") == 1);
+     // assert(wordInDoc("im upset that on nov th my bmw was stolen", "try") == 0);
+     // assert(wordInDoc("im upset that on nov th my bmw was stolen", "the") == 0);
+     // assert(wordInDoc("im upset that on nov th my bmw was stolen", "stolen") == 1);
 
      
-     const int TEST1_NRULES = 3;
-     const char document[MAX_DOCUMENT_LENGTH + 1] = "im upset that on family th my ties was stolen and have i";
-     char wordin[TEST1_NRULES][MAX_WORD_LENGTH+1] = {"i",};
-     char wordout[TEST1_NRULES][MAX_WORD_LENGTH+1] = {"",};
+     // const int TEST1_NRULES = 3;
+     // const char document[MAX_DOCUMENT_LENGTH + 1] = "im upset that on family th my ties was stolen and have i";
+     // char wordin[TEST1_NRULES][MAX_WORD_LENGTH+1] = {"i",};
+     // char wordout[TEST1_NRULES][MAX_WORD_LENGTH+1] = {"",};
 
-          char test1win[TEST1_NRULES][MAX_WORD_LENGTH+1] = { "family", "unhappy", "horse", };
-          char test1wout[TEST1_NRULES][MAX_WORD_LENGTH+1] = {"",       "horse",   "", };
-          assert(determineScore("Happy families are all alike; every unhappy family is unhappy in its own way.",
-                        test1win, test1wout, TEST1_NRULES) == 2);
-          assert(determineScore("Happy horses are all alike; every unhappy horse is unhappy in its own way.",
-                        test1win, test1wout, TEST1_NRULES-1) == 0);
-          assert(determineScore("Happy horses are all alike; every unhappy horse is unhappy in its own way.",
-                        test1win, test1wout, TEST1_NRULES) == 1);
-          assert(determineScore("A horse!  A horse!  My kingdom for a horse!",
-                        test1win, test1wout, TEST1_NRULES) == 1);
-          assert(determineScore("horse:stable ratio is 10:1",
-                        test1win, test1wout, 0) == 0);
-          assert(determineScore("**** 2020 ****",
-                        test1win, test1wout, -1) == 0);
+     //      char test1win[TEST1_NRULES][MAX_WORD_LENGTH+1] = { "family", "unhappy", "horse", };
+     //      char test1wout[TEST1_NRULES][MAX_WORD_LENGTH+1] = {"",       "horse",   "", };
+     //      assert(determineScore("Happy families are all alike; every unhappy family is unhappy in its own way.",
+     //                    test1win, test1wout, TEST1_NRULES) == 2);
+     //      assert(determineScore("Happy horses are all alike; every unhappy horse is unhappy in its own way.",
+     //                    test1win, test1wout, TEST1_NRULES-1) == 0);
+     //      assert(determineScore("Happy horses are all alike; every unhappy horse is unhappy in its own way.",
+     //                    test1win, test1wout, TEST1_NRULES) == 1);
+     //      assert(determineScore("A horse!  A horse!  My kingdom for a horse!",
+     //                    test1win, test1wout, TEST1_NRULES) == 1);
+     //      assert(determineScore("horse:stable ratio is 10:1",
+     //                    test1win, test1wout, 0) == 0);
+     //      assert(determineScore("**** 2020 ****",
+     //                    test1win, test1wout, -1) == 0);
 
-          assert(determineScore(document, wordin, wordout, 1) == 1);
-          cout << "All tests succeeded" << endl;
-
-
-     
-     
-     // int x = determineScore(document, wordin, wordout, 1);
-     // cout << x << endl;
+     //      assert(determineScore(document, wordin, wordout, 1) == 1);
+     //      cout << "All tests succeeded" << endl;
 
 }

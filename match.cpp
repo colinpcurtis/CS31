@@ -2,14 +2,14 @@
 #include <cstring>
 #include <cassert>
 #include <cctype>
-
 using namespace std;
 
 const int MAX_WORD_LENGTH = 20;
 const int MAX_DOCUMENT_LENGTH = 250;
 
 
-void lower(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], int nRules) { // transforms all letters to lowercase in match rules
+void lower(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], int nRules) { 
+     // transforms all letters to lowercase in match rules
      for (int i = 0; i < nRules; i++ ) {
           for (int j = 0; j < MAX_WORD_LENGTH; j++) {
                word1[i][j] = tolower(word1[i][j]);
@@ -29,86 +29,42 @@ bool hasPunct(char word1[][MAX_WORD_LENGTH + 1], int index) {
      return false;
 }
 
-// bool validOneWordRule( char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], char checkWord[MAX_WORD_LENGTH + 1], int nRules ) {
-//      // if (strcmp(checkWord, "") == 0 ) { // empty one word rule is invalid
-//      //      return true;
-//      // }
-//      for (int i = 0; i < nRules; i++) {
-//           // cerr << i << " " <<word1[i] << " " << checkWord << " " << word2[i] << endl;
-          
-//           if ( strcmp(word1[i], checkWord) == 0 && strcmp(word2[i], "") == 0 ) {
-//                cerr << word1[i] << " " << checkWord << endl;
-//                return true;
-//           }
-//      }
-//      return false;
-// }
 
+void toFront(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], int src, int dest) {
+     if (src != dest) {
+          // used to put one word rules at the front of the word arrays
+          char tofront1[MAX_WORD_LENGTH];
+          char tofront2[MAX_WORD_LENGTH]; // do we need +1?
 
-// bool invalidTwoWordRule( char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], char checkWord1[MAX_WORD_LENGTH + 1], 
-//                        char checkWord2[MAX_WORD_LENGTH + 1], int nRules, int pos) {
+          strcpy(tofront1, word1[src]); // use temp variables to flip positions
+          strcpy(tofront2, word2[src]);
+          // todo: check word we're flipping isn't also a one word rule -- should be ok bc we'll flip it back later
 
-//      if (strcmp(checkWord1, "") == 0 || (strcmp(checkWord1, checkWord2) == 0) ) {
-//           return true;
-//      }
-//      // int numOccurences = 0;
-//      for (int i = 0; i < nRules ; i++) {
-//           // if ( /*strcmp(word2[i], "") != 0 && */ i != pos && strcmp(word1[i], checkWord1) == 0 && strcmp(word2[i], checkWord2) == 0  /*|| 
-//           //      (strcmp(word1[i], checkWord1) == 0 && strcmp(checkWord2, "") == 0)*/ ) {
+          strcpy(word1[src], word1[dest]);
+          strcpy(word2[src], word2[dest]);
 
-//           //      cerr << word1[i] << " " << checkWord1 << " "<< word2[i] << " " << checkWord2 << endl;
-//           //      return true;
-//           // }
-//           // cerr << i << " " <<word1[i] << " " << checkWord1 << " "<< word2[i] << " " << checkWord2 << endl;
-//           if ( /*i != pos &&  ( strcmp(word1[i], checkWord1) == 0 && strcmp(word2[i], checkWord2) == 0 )
-//                || */ (strcmp(word1[i], checkWord1) == 0 &&  strcmp(word2[i], "") == 0) /*|| (strcmp(word1[i], "") == 0) */) {
-//                // not checking same element, both in and out words are equal, wordin matches one word rule
-               
-//                return true;
-//           }
-//      }
-//      return false;
-// }
-
-
-bool isPreviouslyPresent( char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], 
-                          char checkword1[MAX_WORD_LENGTH + 1], char checkword2[MAX_WORD_LENGTH + 1], int pos) {
-     
-     for (int i = 0; i < pos; i++) {
-          if ( (strcmp(word1[i], checkword1) == 0 && strcmp(word2[i], checkword2) == 0) || 
-               (strcmp(word1[i], checkword1) == 0 && strcmp(word2[i], "") == 0) ) {
-                    // cerr << word1[i] << " " << word2[i] << checkword1 << " " << checkword2 << endl; 
-               return true;
-          }
+          // for (int i = src; i < nRules; i++) { // have to do everything paired to ensure word order is preserved
+          //      strcpy(word1[i], word1[i + 1]);
+          //      strcpy(word2[i], word2[i + 1]);
+          // }
+          strcpy(word1[dest], tofront1);
+          strcpy(word2[dest], tofront2);
      }
-     return false;
 }
 
-void toFront(char word1[][MAX_WORD_LENGTH + 1], char word2[][MAX_WORD_LENGTH + 1], int nRules, int src, int dest) {
-     // used to put one word rules at the front of the word arrays
-     char tofront1[MAX_WORD_LENGTH];
-     strcpy(tofront1, word1[src]); // use temp variables to flip positions
-     char tofront2[MAX_WORD_LENGTH];
-     strcpy(tofront2, word2[src]);
-
-     for (int i = src; i < nRules; i++) { // have to do everything paired to ensure word order is preserved
-          strcpy(word1[i], word1[i + 1]);
-          strcpy(word2[i], word2[i + 1]);
-     }
-     strcpy(word1[dest], tofront1);
-     strcpy(word2[dest], tofront2);
-}
 
 bool notInPrevious( char wordin[][MAX_WORD_LENGTH + 1], char wordout[][MAX_WORD_LENGTH + 1],
                     char checkword1[MAX_WORD_LENGTH + 1], char checkword2[MAX_WORD_LENGTH + 1], int pos) {
      // make sure that when we want to add a new word rule that we don't have any word in matches or otherwise failing conditions
      for (int i = 0; i < pos; i++) {
-          if ( strcmp(checkword1, wordin[i]) == 0 && strcmp(checkword2, wordout[i]) == 0 ) { // check words match a word rule
+          if ( ( strcmp(checkword1, wordin[i]) == 0 && strcmp(checkword2, wordout[i]) == 0 ) || ( 
+               ( strcmp(checkword1, wordin[i]) == 0  && strcmp(wordout[i], "") == 0) ) ) { // check words match a word rule
                return false;
           } 
      }
      return true;
 }
+
 
 int cleanupRules(char wordin[][MAX_WORD_LENGTH + 1], char wordout[][MAX_WORD_LENGTH + 1], int nRules) {
      lower(wordin, wordout, nRules);
@@ -120,33 +76,32 @@ int cleanupRules(char wordin[][MAX_WORD_LENGTH + 1], char wordout[][MAX_WORD_LEN
      // put one word rules at the front of the array for easy checking of two word rules
      for (int i = 0; i < nRules; i++) {
           if (strcmp(wordin[i], "") != 0 && strcmp(wordout[i], "") == 0 && !hasPunct(wordin, i) ) {
-               toFront(wordin, wordout, nRules, i, numOneWordRules); // put valid word rule at front 
+               toFront(wordin, wordout, i, numOneWordRules); // put valid word rule at front 
                numOneWordRules++;
           }
      }
 
-     for (int i = 0; i < nRules; i++) {
-          cerr << wordin[i] << " " << wordout[i] << endl;
-     }
-     cerr << endl;
-
-
      for (int i = 0; i < nRules; i++) { // loop through all word rules
+          cerr << i << " " << badPositions << endl;
           
           if ( strcmp(wordin[i], wordout[i]) != 0 && strcmp(wordin[i], "") != 0 
                && notInPrevious(wordin, wordout, wordin[i], wordout[i], goodPositions) && !hasPunct(wordin, i) && !hasPunct(wordout, i) 
                 ) {
           // if word rule doesn't match previous word rules or other failing conditions, place it at the next position in the word arrays
-               strcpy(wordin[i - badPositions], wordin[i]);
-               strcpy(wordout[i - badPositions], wordout[i]);
-               goodPositions++; // increment matching word rules
+               if (i - badPositions != i) { // can't strcpy item to same location
+                    strcpy(wordin[i - badPositions], wordin[i]);
+                    strcpy(wordout[i - badPositions], wordout[i]);
+                    goodPositions++;  // increment matching word rules
+               } else {
+                    goodPositions++;
+               }
           } else {
                badPositions++; // position didn't match, so it needs to be replaced
           }
      }
 
      for (int i = 0; i < goodPositions; i++) {
-          cerr << wordin[i] << " " << wordout[i] << endl;
+          cerr << i << " "<< wordin[i] << " " << wordout[i] << endl;
      }
      cerr << goodPositions << endl;
      return goodPositions;
@@ -239,44 +194,24 @@ int main() {
      char test2win[TEST1_NRULES][MAX_WORD_LENGTH + 1] = {
           "", "ties", "confusion", "hearty", "intrigue", "younger", "first", "", "family", "frightened", "", "ties" };
 
-     char word1in[TEST1_NRULES][MAX_WORD_LENGTH+1] = {
-          "confusion", "confusion", "", "charm", "house", "worn-out", "family", "charm", "ties", "", "charm", "FaMily" };
+     // char word1in[TEST1_NRULES][MAX_WORD_LENGTH+1] = {
+     //      "confusion", "confusion", "", "charm", "house", "worn-out", "family", "charm", "ties", "", "charm", "FaMily" };
 
-     char word2in[TEST1_NRULES][MAX_WORD_LENGTH + 1] = {
-          "hi", "hi", "confusion", "hearty", "intrigue", "younger", "first", "", "family", "frightened", "", "ties" };
-     
-     // int x = cleanupRules(word1in , word2in, 5);
-     // cerr << x << endl;
+     // char word2in[TEST1_NRULES][MAX_WORD_LENGTH + 1] = {
+     //      "hi", "hi", "confusion", "hearty", "intrigue", "younger", "first", "", "family", "frightened", "", "ties" };
 
-     // replaceString(word1in, word2in, 5);
-     // int x = cleanupRules(word1in, word2in, 5);
-     // cerr << x << endl;
 
-     // toFront(test1win, test2win, 12, 7, 1);
 
-     // assert( checkIfWordPresent( word1in, word2in, ))
-
-     // oneWordRulesLast(test1win, test2win, 12);
+     // toFront(test1win, test2win, 2, 2);
+     // for (int i = 0; i < TEST1_NRULES; i++) {
+     //      cerr << i << " " << test1win[i] << " " << test2win[i] << endl;
+     // }
 
      assert( cleanupRules(test1win, test2win, 12) == 6 );
-
-     // assert( isPreviouslyPresent(test1win, test2win, "charm", "confusion", 2) == 0);
-
-     // assert( invalidOneWordRule(test1win, test2win, "confusion", 12, 0) == 1 );
-     // assert( invalidOneWordRule(test1win, test2win, "hi", 12, 6) == 0 );
-     // assert( invalidOneWordRule(test1win, test2win, "charm", 12, 10) == 1  );
-
-     // assert( invalidTwoWordRule(test1win, test2win, "family", "ties", 12, 3) == 0 );
-     // assert( invalidTwoWordRule(test1win, test2win, "family", "ties", 12, 11) == 1 );
-     // assert ( invalidTwoWordRule(test1win, test2win, "charm", "", 12, 10) == 1);
-     // assert( invalidTwoWordRule(test1win, test2win, "family", "first", 12, 6) == 0 );
-
-     cerr << "all passed" << endl;
      
+     
+     cerr << "all passed" << endl;
 
-     // char checkword[MAX_WORD_LENGTH + 1] = "confusion";
-     // bool x = checkIfPresent(word1in, word2in, checkword, 0);
-     // cerr << x << endl;
      // assert(wordInDoc("im upset that on nov th my bmw was stolen", "was") == 1);
      // assert(wordInDoc("im upset that on nov th my bmw was stolen", "try") == 0);
      // assert(wordInDoc("im upset that on nov th my bmw was stolen", "the") == 0);

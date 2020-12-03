@@ -178,15 +178,41 @@ void Flatulan::move()
       // Attempt to move in a random direction; if it can't move, don't move.
       // If the player is there, don't move.
     int dir = randInt(0, NUMDIRS-1);  // dir is now UP, DOWN, LEFT, or RIGHT
-    // TODO:  Move in the appropriate direction if allowed
+    switch(dir) {
+        case UP:
+                if ( 1 <= m_row - 1 && m_row - 1 <= m_city->rows() 
+                     && !m_city->isPlayerAt(m_row - 1, m_col) )  {
+                    m_row--;
+                }
+            break;
+            case DOWN:
+                if( 1 <= m_row+1 && m_row + 1 <= m_city->rows() 
+                    && !m_city->isPlayerAt(m_row + 1, m_col) ) {
+                    m_row++;
+                }
+                break;
+            case LEFT:
+                if( 1 <= m_col - 1 && m_col -1 <= m_city->cols() 
+                    && !m_city->isPlayerAt(m_row, m_col - 1) ) {
+                    m_col--;
+                }
+                break;
+            case RIGHT:
+                if( 1 <= m_col + 1 && m_col + 1 <= m_city->cols() 
+                    && !m_city->isPlayerAt(m_row, m_col + 1) ) {
+                    m_col++;
+                }
+                break;
+    }
 }
 
 bool Flatulan::possiblyGetConverted()  // return true if converted
 {
-      // Be converted with 2/3 probability
-    // TODO: 
-    // Delete the following line and replace it with the correct code.
-    return true;  // This implementation compiles, but is incorrect.
+    int num = randInt(1, 3);
+    if (num == 3) { // should occur 1/3 of the time
+        return false;
+    }
+    return true; 
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -283,7 +309,7 @@ void Player::move(int dir)
 
 void Player::getGassed()
 {
-    m_health - 1; // check if works
+    m_health--; // check if works
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -330,7 +356,8 @@ Player* City::player() const
 
 bool City::isPlayerAt(int r, int c) const
 {
-     if (m_player->row() == r && m_player->col() == c) { // if row and col of player are equal to r and c
+     if (m_player->row() == r && m_player->col() == c) { 
+         // if row and col of player are equal to r and c
           return true;
      }
     return false;
@@ -349,9 +376,6 @@ int City::nFlatulansAt(int r, int c) const
                count++;
           }
      }
-     
-     // TODO:  Return the number of Flatulans at row r, column c.
-     // Delete the following line and replace it with the correct code.
      return count;
 }
 
@@ -493,7 +517,6 @@ bool City::addFlatulan(int r, int c)
           return false;
      } else {
           m_flatulans[m_nFlatulans] = new Flatulan(this, r, c); // Flatulan inhibits this city
-          // cout << r << c << endl;
           m_nFlatulans++; // increment Flatulan number
      }
 
@@ -656,10 +679,22 @@ void City::preachToFlatulansAroundPlayer()
       // TODO:  Implement this.
 }
 
+int abs_value(int r) {
+    if (r < 0) {
+        return -r;
+    }
+    return r;
+}
+
 void City::moveFlatulans()
 {
     for (int k = 0; k < m_nFlatulans; k++)
     {
+        m_flatulans[k]->move();
+        if ( abs_value(m_flatulans[k]->row() - m_player->row()) + abs_value(m_flatulans[k]->col() - m_player->col()) == 1) {
+            m_player->getGassed(); // check manhattan distance between player and flatulan
+        }
+
       // TODO:  Have the k-th Flatulan in the city make one move.
       //        If that move results in that Flatulan being orthogonally
       //        adjacent to the player, the player suffers a gas blast.
@@ -797,7 +832,7 @@ int main()
       // Create a game
       // Use this instead to create a mini-game:   Game g(3, 4, 2);
 //     Game g(7, 8, 25);
-     Game g(5, 5, 8);
+     Game g(6, 6, 10);
 
       // Play the game
     g.play();

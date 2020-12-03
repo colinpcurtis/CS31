@@ -186,7 +186,7 @@ bool Flatulan::possiblyGetConverted()  // return true if converted
       // Be converted with 2/3 probability
     // TODO: 
     // Delete the following line and replace it with the correct code.
-    return false;  // This implementation compiles, but is incorrect.
+    return true;  // This implementation compiles, but is incorrect.
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -247,9 +247,35 @@ void Player::preach()
     m_city->preachToFlatulansAroundPlayer();
 }
 
+
 void Player::move(int dir)
 {
-    m_age++;
+    m_age++;        
+    switch (dir)
+        {
+            case UP:
+                if ( 1 <= m_row - 1 && m_row - 1 <= m_city->rows() && m_city->nFlatulansAt(m_row - 1, m_col) == 0 )  { // up
+                    m_row--;
+                }
+            break;
+            case DOWN:
+                if( 1 <= m_row+1 && m_row + 1 <= m_city->rows() && m_city->nFlatulansAt(m_row + 1, m_col) == 0 ) {
+                    m_row++;
+                }
+                break;
+            case LEFT:
+                if( 1 <= m_col - 1 && m_col -1 <= m_city->cols() && m_city->nFlatulansAt(m_row, m_col - 1) == 0 ) {
+                    m_col--;
+                }
+                break;
+            case RIGHT:
+                if( 1 <= m_col + 1 && m_col + 1 <= m_city->cols() && m_city->nFlatulansAt(m_row, m_col + 1) == 0 ) {
+                    m_col++;
+                }
+                break;
+        }
+    
+    
       // TODO:  If there is a grid position in the indicated direction that is
       //        adjacent to the player and vacant, move the player there;
       //        otherwise, don't move.
@@ -257,7 +283,7 @@ void Player::move(int dir)
 
 void Player::getGassed()
 {
-    health() - 1; // check if works
+    m_health - 1; // check if works
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -280,6 +306,10 @@ City::City(int nRows, int nCols)
 
 City::~City()
 {
+    for (int i = 0; i < flatulanCount(); i++) {
+        delete m_flatulans[i];
+    }
+    delete m_player;
     // TODO:  Delete the player and all remaining dynamically allocated Flatulans.
 }
 
@@ -315,14 +345,14 @@ int City::nFlatulansAt(int r, int c) const
 {    
      int count = 0;
      for (int i = 0; i < flatulanCount(); i++) {
-          if (m_flatulans[i]-> row()-1 == r && m_flatulans[i]-> col()-1 == c) {
+          if (m_flatulans[i]->row() == r && m_flatulans[i]->col() == c) {
                count++;
           }
      }
      
      // TODO:  Return the number of Flatulans at row r, column c.
      // Delete the following line and replace it with the correct code.
-     return count;  // This implementation compiles, but is incorrect.
+     return count;
 }
 
 bool City::determineNewPosition(int& r, int& c, int dir) const
@@ -334,14 +364,28 @@ bool City::determineNewPosition(int& r, int& c, int dir) const
       //        return true.
     switch (dir)
     {
-      case UP:
+        case UP:
+            if ( isInBounds(r-1, c) )  { // up
+                r--;
+            }
         // TODO:  Implement the behavior if dir is UP.
         break;
-      case DOWN:
-      case LEFT:
-      case RIGHT:
+        case DOWN:
+            if( isInBounds(r+1, c) ) {
+                r++;
+            }
+            break;
+        case LEFT:
+            if( isInBounds(r, c-1) ) {
+                c--;
+            }
+            break;
+        case RIGHT:
+            if( isInBounds(r, c+1) ) {
+                c++;
+            }
+            break;
         // TODO:  Implement the other directions.
-        break;
       default:
         return false;
     }
@@ -362,45 +406,42 @@ void City::display() const
           }
      }
 
-     for (int r = 0; r < rows(); r++) {
-          for (int c = 0; c < cols(); c++) {
+    // start at 1 since (row, col) in corrdinate system starts at 1
+     for (r = 1; r <= rows(); r++) { 
+          for (c = 1; c <= cols(); c++) {
                switch(nFlatulansAt(r, c)) {
                     case 0:
                          break;
                     case 1:
-                         grid[r][c] = 'F';
+                         grid[r-1][c-1] = 'F';
                          break;
                     case 2:
-                         grid[r][c] = '2';
+                         grid[r-1][c-1] = '2';
                          break;
                     case 3:
-                         grid[r][c] = '3';
+                         grid[r-1][c-1] = '3';
                          break;
                     case 4:
-                         grid[r][c] = '4';
+                         grid[r-1][c-1] = '4';
                          break;
                     case 5:
-                         grid[r][c] = '5';
+                         grid[r-1][c-1] = '5';
                          break;
                     case 6:
-                         grid[r][c] = '6';
+                         grid[r-1][c-1] = '6';
                          break;
                     case 7:
-                         grid[r][c] = '7';
+                         grid[r-1][c-1] = '7';
                          break;
                     case 8:
-                         grid[r][c] = '8';
+                         grid[r-1][c-1] = '8';
                          break;
                     default:
-                         grid[r][c] = '9';
+                         grid[r-1][c-1] = '9';
                          break;
                }
           }
      }
-        // Indicate each Flatulan's position
-    // TODO:  If one Flatulan is at some grid point, set the char to 'F'.
-    //        If it's 2 though 8, set it to '2' through '8'.
-    //        For 9 or more, set it to '9'.
 
         // Indicate player's position
     if (m_player != nullptr)
@@ -451,7 +492,7 @@ bool City::addFlatulan(int r, int c)
      if (flatulanCount() == MAXFLATULANS) { // num of Flatulans is max num
           return false;
      } else {
-          m_flatulans[flatulanCount()] = new Flatulan(this, r, c); // Flatulan inhibits this city
+          m_flatulans[m_nFlatulans] = new Flatulan(this, r, c); // Flatulan inhibits this city
           // cout << r << c << endl;
           m_nFlatulans++; // increment Flatulan number
      }
@@ -464,8 +505,7 @@ bool City::addFlatulan(int r, int c)
       // in this scenario (which won't occur in this game):  MAXFLATULANS
       // Flatulans are added, then some are converted, then more are added.
 
-      // TODO:  Implement this.
-    return true;  // This implementation compiles, but is incorrect.
+    return true; 
 }
 
 bool City::addPlayer(int r, int c)
@@ -488,6 +528,126 @@ bool City::addPlayer(int r, int c)
 
 void City::preachToFlatulansAroundPlayer()
 {
+    for (int i = 0; i < flatulanCount(); i++) {
+        // loop through nFlatulans list, check each of 8 positions for whether
+        // they're in bounds and Flatulans occupy one of the given positions
+        // if so we remove delete the object and shift the array to the left
+        // starting at the index that we remove
+        if ( isInBounds( m_player->row()-1, m_player->col()-1) 
+             && nFlatulansAt(m_player->row()-1, m_player->col()-1) > 0 ) {
+            if ( m_flatulans[i]->row() == m_player->row()-1 
+                 && m_flatulans[i]->col() == m_player->col()-1 
+                 && m_flatulans[i]->possiblyGetConverted() ) {
+                
+                delete m_flatulans[i];
+                for (int j = i; j < m_nFlatulans; j++) {
+                    m_flatulans[j] = m_flatulans[j + 1];
+                }
+                m_nFlatulans--;
+                i--; // decrement index so we don't miss a Flatulan
+            }
+        }
+        if ( isInBounds( m_player->row()-1, m_player->col()) 
+             && nFlatulansAt(m_player->row()-1, m_player->col()) > 0 ) {
+            if ( m_flatulans[i]->row() == m_player->row()-1 
+                 && m_flatulans[i]->col() == m_player->col() 
+                 && m_flatulans[i]->possiblyGetConverted() ) {
+
+                delete m_flatulans[i];
+                for (int j = i; j < m_nFlatulans; j++) {
+                    m_flatulans[j] = m_flatulans[j + 1];
+                }
+                m_nFlatulans--;
+                i--;
+            }
+        }
+        if ( isInBounds( m_player->row()-1, m_player->col()+1) 
+             && nFlatulansAt(m_player->row()-1, m_player->col()+1) > 0 ) {
+            if ( m_flatulans[i]->row() == m_player->row()-1 
+                 && m_flatulans[i]->col() == m_player->col()+1
+                 && m_flatulans[i]->possiblyGetConverted() ) {
+
+                delete m_flatulans[i];
+                for (int j = i; j < m_nFlatulans; j++) {
+                    m_flatulans[j] = m_flatulans[j + 1];
+                }
+                m_nFlatulans--;
+                i--;
+            }
+        }
+        if ( isInBounds( m_player->row(), m_player->col()-1) 
+             && nFlatulansAt(m_player->row(), m_player->col()-1) > 0 ) {
+            if ( m_flatulans[i]->row() == m_player->row() 
+                 && m_flatulans[i]->col() == m_player->col()-1
+                 && m_flatulans[i]->possiblyGetConverted() ) {
+
+                delete m_flatulans[i];
+                for (int j = i; j < m_nFlatulans; j++) {
+                    m_flatulans[j] = m_flatulans[j + 1];
+                }
+                m_nFlatulans--;
+                i--;
+            }
+        }
+        if ( isInBounds( m_player->row(), m_player->col()+1) 
+             && nFlatulansAt(m_player->row(), m_player->col()+1) > 0 ) {
+            if ( m_flatulans[i]->row() == m_player->row() 
+                 && m_flatulans[i]->col() == m_player->col()+1
+                 && m_flatulans[i]->possiblyGetConverted() ) {
+
+                delete m_flatulans[i];
+                for (int j = i; j < m_nFlatulans; j++) {
+                    m_flatulans[j] = m_flatulans[j + 1];
+                }
+                m_nFlatulans--;
+                i--;
+            }
+        }
+        if ( isInBounds( m_player->row()+1, m_player->col()-1) 
+             && nFlatulansAt(m_player->row()+1, m_player->col()-1) > 0 ) {
+            if ( m_flatulans[i]->row() == m_player->row()+1 
+                 && m_flatulans[i]->col() == m_player->col()-1
+                 && m_flatulans[i]->possiblyGetConverted() ) {
+
+                delete m_flatulans[i];
+                for (int j = i; j < m_nFlatulans; j++) {
+                    m_flatulans[j] = m_flatulans[j + 1];
+                }
+                m_nFlatulans--;
+                i--;
+            }
+        }
+        if ( isInBounds( m_player->row()+1, m_player->col()) 
+             && nFlatulansAt(m_player->row()+1, m_player->col()) > 0 ) {
+            if ( m_flatulans[i]->row() == m_player->row()+1 
+                 && m_flatulans[i]->col() == m_player->col()
+                 && m_flatulans[i]->possiblyGetConverted() ) {
+
+                delete m_flatulans[i];
+                for (int j = i; j < m_nFlatulans; j++) {
+                    m_flatulans[j] = m_flatulans[j + 1];
+                }
+                m_nFlatulans--;
+                i--;
+            }
+        }
+        if ( isInBounds( m_player->row()+1, m_player->col()+1) 
+             && nFlatulansAt(m_player->row()+1, m_player->col()+1) > 0 ) {
+            if ( m_flatulans[i]->row() == m_player->row()+1 
+                 && m_flatulans[i]->col() == m_player->col()+1
+                 && m_flatulans[i]->possiblyGetConverted() ) {
+
+                delete m_flatulans[i];
+                for (int j = i; j < m_nFlatulans; j++) {
+                    m_flatulans[j] = m_flatulans[j + 1];
+                }
+                m_nFlatulans--;
+                i--;
+            }
+        }
+    }
+             
+
       // Preach to Flatulans orthogonally or diagonally adjacent to player.
       // If a Flatulan is converted, destroy it and remove it from the city,
       // since we have no further need to display it or have it interact with
@@ -613,7 +773,8 @@ int decodeDirection(char dir)
       case 'l':  return LEFT;
       case 'r':  return RIGHT;
     }
-    return -1;  // bad argument passed in!
+    
+    // return NUMDIRS;  // bad argument passed in!
 }
 
   // Return a random int from min to max, inclusive
@@ -636,7 +797,7 @@ int main()
       // Create a game
       // Use this instead to create a mini-game:   Game g(3, 4, 2);
 //     Game g(7, 8, 25);
-     Game g(5, 5, 13);
+     Game g(5, 5, 8);
 
       // Play the game
     g.play();

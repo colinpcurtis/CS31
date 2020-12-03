@@ -80,9 +80,6 @@ class Player
     int   m_col;
     int   m_age;
     int   m_health;
-      // TODO: You'll probably find that a player object needs an additional
-      //       data member to support your implementation of the behavior
-      //       affected by the player's being blasted with gas.
 };
 
 class City
@@ -280,7 +277,7 @@ void Player::move(int dir)
     switch (dir)
         {
             case UP:
-                if ( 1 <= m_row - 1 && m_row - 1 <= m_city->rows() && m_city->nFlatulansAt(m_row - 1, m_col) == 0 )  { // up
+                if ( 1 <= m_row - 1 && m_row - 1 <= m_city->rows() && m_city->nFlatulansAt(m_row - 1, m_col) == 0 )  {
                     m_row--;
                 }
             break;
@@ -309,7 +306,7 @@ void Player::move(int dir)
 
 void Player::getGassed()
 {
-    m_health--; // check if works
+    m_health--; // decrement health
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -332,11 +329,15 @@ City::City(int nRows, int nCols)
 
 City::~City()
 {
+    // delete flatulans at each position in array
+    // we shifted over deleted flatulans so 
+    // elements we have to remove are all at 
+    // pos 0 to flatulanCount
     for (int i = 0; i < flatulanCount(); i++) {
         delete m_flatulans[i];
     }
+    // delete player
     delete m_player;
-    // TODO:  Delete the player and all remaining dynamically allocated Flatulans.
 }
 
 int City::rows() const
@@ -431,6 +432,7 @@ void City::display() const
      }
 
     // start at 1 since (row, col) in corrdinate system starts at 1
+    // and we have to check nFlatulans, which starts at (1, 1)
      for (r = 1; r <= rows(); r++) { 
           for (c = 1; c <= cols(); c++) {
                switch(nFlatulansAt(r, c)) {
@@ -519,14 +521,6 @@ bool City::addFlatulan(int r, int c)
           m_flatulans[m_nFlatulans] = new Flatulan(this, r, c); // Flatulan inhibits this city
           m_nFlatulans++; // increment Flatulan number
      }
-
-      // If there are MAXFLATULANS unconverted Flatulans, return false.
-      // Otherwise, dynamically allocate a new Flatulan at coordinates (r,c).
-      // Save the pointer to the newly allocated Flatulan and return true.
-
-      // Your function must work as specified in the preceding paragraph even
-      // in this scenario (which won't occur in this game):  MAXFLATULANS
-      // Flatulans are added, then some are converted, then more are added.
 
     return true; 
 }
@@ -669,17 +663,9 @@ void City::preachToFlatulansAroundPlayer()
             }
         }
     }
-             
-
-      // Preach to Flatulans orthogonally or diagonally adjacent to player.
-      // If a Flatulan is converted, destroy it and remove it from the city,
-      // since we have no further need to display it or have it interact with
-      // the player.
-
-      // TODO:  Implement this.
 }
 
-int abs_value(int r) {
+int abs_value(int r) { // check manhattan distance between flatulan and player
     if (r < 0) {
         return -r;
     }
@@ -692,12 +678,9 @@ void City::moveFlatulans()
     {
         m_flatulans[k]->move();
         if ( abs_value(m_flatulans[k]->row() - m_player->row()) + abs_value(m_flatulans[k]->col() - m_player->col()) == 1) {
-            m_player->getGassed(); // check manhattan distance between player and flatulan
+            m_player->getGassed();
+            // orthogonally adjacent correponds to manhattan distance of 1
         }
-
-      // TODO:  Have the k-th Flatulan in the city make one move.
-      //        If that move results in that Flatulan being orthogonally
-      //        adjacent to the player, the player suffers a gas blast.
     }
 }
 
@@ -809,7 +792,7 @@ int decodeDirection(char dir)
       case 'r':  return RIGHT;
     }
     
-    // return NUMDIRS;  // bad argument passed in!
+    // return NUMDIRS;  // double check return value
 }
 
   // Return a random int from min to max, inclusive
@@ -832,7 +815,7 @@ int main()
       // Create a game
       // Use this instead to create a mini-game:   Game g(3, 4, 2);
 //     Game g(7, 8, 25);
-     Game g(6, 6, 10);
+     Game g(10, 10, 30);
 
       // Play the game
     g.play();
